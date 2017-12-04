@@ -3,6 +3,7 @@ import { HomeService } from '../home.service';
 import { Question } from '../question';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, NgForm, Validators, FormControl } from '@angular/forms';
+// import { AnswerService } from '../services/answer.service';
 
 @Component({
   selector: 'app-home',
@@ -10,28 +11,49 @@ import { FormBuilder, FormGroup, NgForm, Validators, FormControl } from '@angula
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  questions: Question[];
+  questions: any = {};
   statusMessage: string;
   askquestionform: FormGroup;
-
-  constructor(private fb: FormBuilder, private router: Router, private home: HomeService) {
+  id: string;
+  
+  constructor(private fb: FormBuilder, private router: Router, private homeService: HomeService) {
     this.askquestionform = fb.group({
       'question': ['']
     });
+    // this.answerForm = fb.group({
+    //   'answerQ': ['']
+    // });
   }
 
   ngOnInit() {
     this.getQuestions();
   }
 
-  getQuestions(): void {
-    this.questions = this.home.getQuestions(); 
+  // postAnswer(value, question_id) {
+  //   this.answerService.postAnswer(value, question_id);
+  //   this.getQuestions();
+  // }
+
+  getQuestions() {
+    this.homeService.getQuestions().then(data => {
+      console.log(data);
+      if(data.success == true){
+        this.questions = data.body
+      } else{
+        console.log("not success");
+      }
+    });
+    console.log(this.questions); 
   }
 
+
   askQuestion(value): void {
-    this.home.askQuestion(value.question)
-      .subscribe((res: Response) => {
+    this.homeService.askQuestion(value.question)
+      .then(data => {
+        console.log("saved !"); 
         this.statusMessage = 'Question posted successfully';
+        this.askquestionform.reset();
+        this.getQuestions();
       });
   }
 

@@ -7,14 +7,16 @@ import { FormBuilder, FormGroup, NgForm, Validators, FormControl } from '@angula
 
 @Component({
   selector: 'app-answer',
+  providers: [HomeService, AnswerService],
   templateUrl: './answer.component.html',
   styleUrls: ['./answer.component.css']
 })
 export class AnswerComponent implements OnInit {
-  questions: Question[];
+  questions: any = {};
   answerform: FormGroup;
+  mdata: any = {};
 
-  constructor(private fb: FormBuilder, private router: Router, private home:HomeService, private answer:AnswerService) {
+  constructor(private fb: FormBuilder, private router: Router, private home:HomeService, private answerService:AnswerService) {
     this.answerform = fb.group({
       'answer': [''],
       'question_id': ['']
@@ -39,20 +41,21 @@ export class AnswerComponent implements OnInit {
     this.getQuestions();
   }
 
-  getQuestions(): void {
-    this.questions = this.home.getQuestions(); 
-  }
+  getQuestions() {
+    this.home.getUnansweredQuestionUrl().then(data => {
+      if(data.success == true){
+        this.questions = data.body;
 
-  postAnswer(value): void {
-    let obj = {
-      answer: value.answer,
-      question_id: value.question_id,
-      is_anonymous: false
-    }
-    this.answer.saveAnswer(obj)
-    .subscribe((res: Response) => {
-      
-    });
+      } else{
+        console.log("not success");
+      }
+    });;
+    console.log(this.questions); 
+  } 
+
+  postAnswer(value, question_id) {
+    this.answerService.postAnswer(value, question_id);
+    this.getQuestions();
   }
 
 }
